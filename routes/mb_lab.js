@@ -28,16 +28,18 @@ router.post("/bookLabRoom", (req, res) => {
     appove_ac_name,
   } = req.body;
 
-  let sql = 'INSERT INTO book_lab set  ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?'
-  db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, start_date, endtime], (err, result) => {
-    if (err) {
-      console.log(err + "bookLabRoom")
-      req.msg = 'err'
-    }
-    else {
-      req.msg = 'ok'
-    }
-  })
+  //addEventToCalendar(name, start_date, endtime).catch(console.error);
+
+  // let sql = 'INSERT INTO book_lab set  ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?'
+  // db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, start_date, endtime], (err, result) => {
+  //   if (err) {
+  //     console.log(err + "bookLabRoom")
+  //     req.msg = 'err'
+  //   }
+  //   else {
+  //     req.msg = 'ok'
+  //   }
+  // })
 
 })
 
@@ -128,18 +130,18 @@ async function listEvents(auth) {
     console.log('No upcoming events found.');
     return;
   }
-  console.log('Upcoming 10 events:');
+  //console.log('Upcoming 10 events:');
   events.map((event, i) => {
     const start = event.start.dateTime || event.start.date;
     console.log(`${start} - ${event.summary}`);
   });
 }
 
-authorize().then(listEvents).catch(console.error);
+//authorize().then(listEvents).catch(console.error);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-async function addEventToCalendar() {
+async function addEventToCalendar(name, startdate, enddate) {
   const auth = await authenticate({
     keyfilePath: CREDENTIALS_PATH,
     scopes: 'https://www.googleapis.com/auth/calendar', // Use the correct scope
@@ -149,14 +151,14 @@ async function addEventToCalendar() {
 
   // Define the event details
   const event = {
-    summary: 'Sample Event', // Event summary (title)
+    summary: `${name} ${startdate} - ${enddate}`, // Event summary (title)
     description: 'This is a sample event description.', // Event description
     start: {
-      dateTime: '2023-10-02T10:00:00', // Start date and time in ISO 8601 format
+      dateTime: startdate, // Start date and time in ISO 8601 format
       timeZone: 'UTC', // Time zone for the start time
     },
     end: {
-      dateTime: '2023-10-03T12:00:00', // End date and time in ISO 8601 format
+      dateTime: enddate, // End date and time in ISO 8601 format
       timeZone: 'UTC', // Time zone for the end time
     },
   };
@@ -170,7 +172,11 @@ async function addEventToCalendar() {
   console.log('Event created:', response.data.htmlLink);
 }
 
-addEventToCalendar().catch(console.error);
+addEventToCalendar('ODIN SON Inwza', '2023-09-10T23:00:00', '2023-09-11T08:00:00').catch(console.error);
+//addEventToCalendar('ODIN SON', '2023-10-25T10:00:00', '2023-10-27T16:00:00').catch(console.error);
+//2023-09-20T17:07:00.038Z
+
+
 
 module.exports = router;
 
