@@ -190,7 +190,7 @@ async function addEventToCalendar(name, startdate, enddate) {
   console.log('Event created:', response.data.htmlLink);
 }
 
-addEventToCalendar('ODIN SON Inwza', '2023-09-28T23:00:00', '2023-09-29T08:00:00').catch(console.error);
+addEventToCalendar('ODIN SON', '2023-09-28T23:00:00', '2023-09-29T08:00:00').catch(console.error);
 //addEventToCalendar('ODIN SON', '2023-10-25T10:00:00', '2023-10-27T16:00:00').catch(console.error);
 //2023-09-20T17:07:00.038Z
 
