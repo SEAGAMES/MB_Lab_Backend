@@ -2,6 +2,7 @@ const express = require("express");
 var router = express.Router();
 const db = require("./database");
 
+
 router.get("/mb_lab_room", function (req, res, next) {
   // res.render('index', { title: 'Express' });
   db.execute(`SELECT * FROM mb_room`)
@@ -28,18 +29,60 @@ router.post("/bookLabRoom", (req, res) => {
     appove_ac_name,
   } = req.body;
 
-  //addEventToCalendar(name, start_date, endtime).catch(console.error);
+  //console.log(req.body)
 
-  // let sql = 'INSERT INTO book_lab set  ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?'
-  // db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, start_date, endtime], (err, result) => {
-  //   if (err) {
-  //     console.log(err + "bookLabRoom")
-  //     req.msg = 'err'
-  //   }
-  //   else {
-  //     req.msg = 'ok'
-  //   }
-  // })
+  // แปลงข้อมูล start_date และ endtime เป็นวัตถุ Date
+  const startDate = new Date(start_date);
+  const endDate = new Date(endtime);
+
+  // เพิ่ม 7 ชั่วโมงในวันที่และเวลา
+  startDate.setHours(startDate.getHours() + 7);
+  endDate.setHours(endDate.getHours() + 7);
+
+  // แปลงกลับเป็นสตริงในรูปแบบ ISO 8601
+  const newStartDate = startDate.toISOString().slice(0, -5);
+  const newEndDate = endDate.toISOString().slice(0, -5);
+
+  console.log(newStartDate); 
+  console.log(newEndDate);  
+
+
+  // const ac_name = 'thanakrit.nim'
+  // const name = 'Thanakrit Nimnual'
+  // const num_in_team = 5
+  // const phone = '0621699636'
+  // const zone = 'B'
+  // const floor = '2'
+  // const where_lab = 'B205'
+  // const start_date = '2023-09-27T16:00:00.841Z'
+  // const endtime = '2023-09-28T01:00:00.841Z'
+  // const appove_status = 'true'
+  // const ppove_ac_name = 'thanakrit.nim'
+
+  db.execute(`SELECT * FROM book_lab WHERE where_lab = 'C210' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`)
+    .then(([data, fields]) => {
+      console.log(data)
+      if (data.length == 0) {
+        let sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
+        db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate], (err, result) => {
+          if (err) {
+            console.log(err + "bookLabRoom");
+            req.msg = 'err';
+          } else {s
+            req.msg = 'ok';
+          }
+        });
+      } else {
+        console.log('ชน SSS')
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
+
+  // addEventToCalendar(name, start_date, endtime).catch(console.error);
+
 
 })
 
@@ -102,7 +145,7 @@ async function addEventToCalendar(name, startdate, enddate) {
   //console.log('Event created:', response.data.htmlLink);
 }
 
-addEventToCalendar('B205 TEST', '2023-09-27T23:00:00', '2023-09-29T08:00:00').catch(console.error);
+//addEventToCalendar('B205 TEST', '2023-09-27T23:00:00', '2023-09-29T08:00:00').catch(console.error);
 
 
 module.exports = router;
