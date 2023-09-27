@@ -27,9 +27,10 @@ router.post("/bookLabRoom", (req, res) => {
     endtime,
     appove_status,
     appove_ac_name,
+    room_code
   } = req.body;
 
-  //console.log(req.body)
+  console.log(req.body)
 
   // แปลงข้อมูล start_date และ endtime เป็นวัตถุ Date
   const startDate = new Date(start_date);
@@ -39,13 +40,11 @@ router.post("/bookLabRoom", (req, res) => {
   startDate.setHours(startDate.getHours() + 7);
   endDate.setHours(endDate.getHours() + 7);
 
-  // แปลงกลับเป็นสตริงในรูปแบบ ISO 8601
+  // แปลงกลับเป็นสตริงในรูปแบบ ISO 8601 เเละ ลบ 2 ตัวหลังออก
   const newStartDate = startDate.toISOString().slice(0, -5);
   const newEndDate = endDate.toISOString().slice(0, -5);
 
-  console.log(newStartDate); 
-  console.log(newEndDate);  
-
+  console.log()
 
   // const ac_name = 'thanakrit.nim'
   // const name = 'Thanakrit Nimnual'
@@ -59,10 +58,10 @@ router.post("/bookLabRoom", (req, res) => {
   // const appove_status = 'true'
   // const ppove_ac_name = 'thanakrit.nim'
 
-  db.execute(`SELECT * FROM book_lab WHERE where_lab = 'C210' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`)
+  db.execute(`SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`)
     .then(([data, fields]) => {
-      console.log(data)
-      if (data.length == 0) {
+      if (data.length === 0) {
+        addEventToCalendar(name, start_date, endtime, room_code).catch(console.error);
         let sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
         db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate], (err, result) => {
           if (err) {
@@ -73,20 +72,15 @@ router.post("/bookLabRoom", (req, res) => {
           }
         });
       } else {
-        console.log('ชน SSS')
+        res.status(400).json({ msg: 'Time conflict' });
       }
     })
     .catch((error) => {
       console.log(error);
     });
-
-
-  // addEventToCalendar(name, start_date, endtime).catch(console.error);
-
-
 })
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const path = require('path');
 const { google } = require('googleapis');
@@ -112,7 +106,8 @@ function formatTime(dateTimeString) {
   return `${hours}:${minutes}`;
 }
 
-async function addEventToCalendar(name, startdate, enddate) {
+async function addEventToCalendar(name, startdate, enddate, room_code) {
+  //console.log(startdate, enddate)
   const auth = await authenticate({
     keyfilePath: CREDENTIALS_PATH,
     scopes: 'https://www.googleapis.com/auth/calendar', // Use the correct scope
@@ -138,7 +133,7 @@ async function addEventToCalendar(name, startdate, enddate) {
 
   // Insert the event into the primary calendar
   const response = await calendar.events.insert({
-    calendarId: '931dbff60b1127558b856ee6cbae877e4d2614d82d7c51a9c217a16b04bd4ed6@group.calendar.google.com', // Use the desired calendar ID
+    calendarId: room_code, // Use the desired calendar ID
     resource: event,
   });
 
