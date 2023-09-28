@@ -34,43 +34,29 @@ router.post("/bookLabRoom", (req, res) => {
 
   // แปลงข้อมูล start_date และ endtime เป็นวัตถุ Date
   const startDate = new Date(start_date);
-  const endDate = new Date(endtime);
+  const endDate = new Date(endtime); // ใช้ใส่ google calendar เนื่องจากต้องทำให้อยู่ในรูป 2023-09-28T18:00:00.110Z ในวันสุดท้าย ซึ่งจะทำให้ tab ของปฎิทินยาวออกไม่รวมอยู่วันเดียว
 
   // เพิ่ม 7 ชั่วโมงในวันที่และเวลา
   startDate.setHours(startDate.getHours() + 7);
   endDate.setHours(endDate.getHours() + 7);
 
   // แปลงกลับเป็นสตริงในรูปแบบ ISO 8601 เเละ ลบ 2 ตัวหลังออก
-  const newStartDate = startDate.toISOString().slice(0, -5);
-  const newEndDate = endDate.toISOString().slice(0, -5);
-
-  console.log()
-
-  // const ac_name = 'thanakrit.nim'
-  // const name = 'Thanakrit Nimnual'
-  // const num_in_team = 5
-  // const phone = '0621699636'
-  // const zone = 'B'
-  // const floor = '2'
-  // const where_lab = 'B205'
-  // const start_date = '2023-09-27T16:00:00.841Z'
-  // const endtime = '2023-09-28T01:00:00.841Z'
-  // const appove_status = 'true'
-  // const ppove_ac_name = 'thanakrit.nim'
+  const newStartDate = startDate.toISOString().slice(0, -5); // ใช้ลง DB และ ใส่ google calendar
+  const newEndDate = endDate.toISOString().slice(0, -5); // ใช้ลง DB 
 
   db.execute(`SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`)
     .then(([data, fields]) => {
       if (data.length === 0) {
-        addEventToCalendar(name, start_date, endtime, room_code).catch(console.error);
-        let sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
-        db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate], (err, result) => {
-          if (err) {
-            console.log(err + "bookLabRoom");
-            req.msg = 'err';
-          } else {s
-            req.msg = 'ok';
-          }
-        });
+        addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code).catch(console.error);
+        // let sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
+        // db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate], (err, result) => {
+        //   if (err) {
+        //     console.log(err + "bookLabRoom");
+        //     req.msg = 'err';
+        //   } else {s
+        //     req.msg = 'ok';
+        //   }
+        // });
       } else {
         res.status(400).json({ msg: 'Time conflict' });
       }
@@ -106,7 +92,7 @@ function formatTime(dateTimeString) {
   return `${hours}:${minutes}`;
 }
 
-async function addEventToCalendar(name, startdate, enddate, room_code) {
+async function addEventToCalendar(name, startdate, enddate, newEndDate, room_code) {
   //console.log(startdate, enddate)
   const auth = await authenticate({
     keyfilePath: CREDENTIALS_PATH,
@@ -121,7 +107,7 @@ async function addEventToCalendar(name, startdate, enddate, room_code) {
 
   const event = {
     summary: `${name}`,
-    description: `${formatTime(startdate)} - ${formatTime(enddate)}`,
+    description: `${formatTime(startdate)} - ${formatTime(newEndDate)}`,
     start: {
       date: start
     },
