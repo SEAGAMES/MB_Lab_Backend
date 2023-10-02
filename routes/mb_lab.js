@@ -14,6 +14,17 @@ router.get("/mb_lab_room", function (req, res, next) {
     });
 });
 
+router.get("/mb_booking_lab", function (req, res, next) {
+  // res.render('index', { title: 'Express' });
+  db.execute(`SELECT * FROM book_lab`)
+    .then(([data, fields]) => {
+      res.json({ data });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+});
+
 router.post("/bookLabRoom", (req, res) => {
   const {
     ac_name,
@@ -48,15 +59,15 @@ router.post("/bookLabRoom", (req, res) => {
     .then(([data, fields]) => {
       if (data.length === 0) {
         addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code).catch(console.error);
-        // let sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
-        // db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate], (err, result) => {
-        //   if (err) {
-        //     console.log(err + "bookLabRoom");
-        //     req.msg = 'err';
-        //   } else {s
-        //     req.msg = 'ok';
-        //   }
-        // });
+        let sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
+        db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate], (err, result) => {
+          if (err) {
+            console.log(err + "bookLabRoom");
+            req.msg = 'err';
+          } else {
+            req.msg = 'ok';
+          }
+        });
       } else {
         res.status(400).json({ msg: 'Time conflict' });
       }
@@ -114,7 +125,7 @@ async function addEventToCalendar(name, startdate, enddate, newEndDate, room_cod
     end: {
       date: end.toISOString().split('T')[0], // ใช้ endDate ที่แก้ไขแล้ว
     },
-    colorId: '3', // ตั้งค่ารหัสสีให้กับกิจกรรม
+    colorId: '6', // ตั้งค่ารหัสสีให้กับกิจกรรม
   };
 
   // Insert the event into the primary calendar
