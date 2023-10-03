@@ -16,7 +16,10 @@ router.get("/mb_lab_room", function (req, res, next) {
 
 router.get("/mb_booking_lab", function (req, res, next) {
   // res.render('index', { title: 'Express' });
-  db.execute(`SELECT * FROM book_lab`)
+  db.execute(`SELECT * FROM book_lab
+  WHERE DATE(start_date) >= DATE(NOW() - INTERVAL 30 DAY)
+  ORDER BY appove_status;
+  `)
     .then(([data, fields]) => {
       res.json({ data });
     })
@@ -25,7 +28,7 @@ router.get("/mb_booking_lab", function (req, res, next) {
     });
 });
 
-router.post("/bookLabRoom", (req, res) => {
+router.post("/bookLabRoom", async (req, res) => {
   const {
     ac_name,
     name,
@@ -55,26 +58,23 @@ router.post("/bookLabRoom", (req, res) => {
   const newStartDate = startDate.toISOString().slice(0, -5); // ใช้ลง DB และ ใส่ google calendar
   const newEndDate = endDate.toISOString().slice(0, -5); // ใช้ลง DB 
 
-  db.execute(`SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`)
-    .then(([data, fields]) => {
-      if (data.length === 0) {
-        addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code).catch(console.error);
-        let sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
-        db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate], (err, result) => {
-          if (err) {
-            console.log(err + "bookLabRoom");
-            req.msg = 'err';
-          } else {
-            req.msg = 'ok';
-          }
-        });
-      } else {
-        res.status(400).json({ msg: 'Time conflict' });
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  try {
+    const [data, fields] = await db.execute(`SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`);
+
+    if (data.length === 0) {
+      console.log('มา1');
+      await addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code);
+      const sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
+      const [results, _] = await db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate]);
+      console.log('Insert ID:', results.insertId); // รับ ID ของข้อมูลที่ถูกเพิ่ม
+      res.json({ msg: 'ok' });
+    } else {
+      res.json({ msg: 'Time conflict' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Internal Server Error' });
+  }
 })
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,16 +128,25 @@ async function addEventToCalendar(name, startdate, enddate, newEndDate, room_cod
     colorId: '6', // ตั้งค่ารหัสสีให้กับกิจกรรม
   };
 
-  // Insert the event into the primary calendar
+  // ใช้ตรวจว่าค่าได้ถูกส่งไปสำเร็จเเล้วหรือไม่
   const response = await calendar.events.insert({
     calendarId: room_code, // Use the desired calendar ID
     resource: event,
   });
 
-  //console.log('Event created:', response.data.htmlLink);
-}
 
-//addEventToCalendar('B205 TEST', '2023-09-27T23:00:00', '2023-09-29T08:00:00').catch(console.error);
+  // เช็คสถานะการเรียก API ในคำตอบ
+  if (response.status === 200) {
+    // คำขอสำเร็จ
+    // console.log('Event created successfully:', response.data.htmlLink);
+  } else {
+    // คำขอไม่สำเร็จ คุณสามารถดูข้อมูลเพิ่มเติมใน response.data เพื่อเข้าใจปัญหา
+    // console.error('Failed to create event. Status code:', response.status);
+    // console.error('Error data:', response.data);
+  }
+
+
+}
 
 
 module.exports = router;
