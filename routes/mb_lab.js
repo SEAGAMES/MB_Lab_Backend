@@ -44,7 +44,7 @@ router.post("/bookLabRoom", async (req, res) => {
     room_code
   } = req.body;
 
-  console.log(req.body)
+  //console.log(req.body)
 
   // แปลงข้อมูล start_date และ endtime เป็นวัตถุ Date
   const startDate = new Date(start_date);
@@ -62,11 +62,10 @@ router.post("/bookLabRoom", async (req, res) => {
     const [data, fields] = await db.execute(`SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`);
 
     if (data.length === 0) {
-      console.log('มา1');
       await addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code);
       const sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
       const [results, _] = await db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate]);
-      console.log('Insert ID:', results.insertId); // รับ ID ของข้อมูลที่ถูกเพิ่ม
+      //console.log('Insert ID:', results.insertId); // รับ ID ของข้อมูลที่ถูกเพิ่ม
       res.json({ msg: 'ok' });
     } else {
       res.json({ msg: 'Time conflict' });
@@ -76,6 +75,35 @@ router.post("/bookLabRoom", async (req, res) => {
     res.status(500).json({ msg: 'Internal Server Error' });
   }
 })
+
+router.post("/updateApproveStatus", async (req, res) => {
+  const id = req.body.id; // รับค่า dataID จาก req.body
+  const statusCode = req.body.statusCode; // รับค่า value จาก req.body
+
+  try {
+    // สร้างคำสั่ง SQL UPDATE สถานะการอนุมัติ
+    const sql = `
+      UPDATE book_lab
+      SET appove_status = ?
+      WHERE id = ?
+    `;
+
+    // ทำการอัปเดตสถานะการอนุมัติในฐานข้อมูล
+    const [ results ] = await db.execute(sql, [statusCode, id]);
+    //console.log(results)
+
+    // ตรวจสอบผลลัพธ์และส่งคำตอบ JSON กลับไปยังฝั่ง frontend เพื่อรายงานสถานะของการอัปเดต (สำเร็จหรือไม่)
+    if (results.affectedRows === 1) {
+      res.json({ msg: 'ok' });
+    } else {
+      res.json({ msg: 'error' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Internal Server Error' });
+  }
+});
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
