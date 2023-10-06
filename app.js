@@ -20,7 +20,7 @@ app.use(cors())
 
 // เนื่องจากติด cors จึงต้องติดตั้งเพื่ออนุญาติ ip นี้
 var corsOptions = {
-  origin: "http://localhost:3000",
+  origin: "http://localhost:3200",
  
 }
 
