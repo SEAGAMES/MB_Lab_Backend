@@ -38,17 +38,17 @@ router.post("/bookLabRoom", async (req, res) => {
     floor,
     where_lab,
     start_date,
-    endtime,
+    end_date,
     appove_status,
     appove_ac_name,
     room_code
   } = req.body;
 
-  //console.log(req.body)
+  console.log(req.body)
 
-  // แปลงข้อมูล start_date และ endtime เป็นวัตถุ Date
+  // แปลงข้อมูล start_date และ end_date เป็นวัตถุ Date
   const startDate = new Date(start_date);
-  const endDate = new Date(endtime); // ใช้ใส่ google calendar เนื่องจากต้องทำให้อยู่ในรูป 2023-09-28T18:00:00.110Z ในวันสุดท้าย ซึ่งจะทำให้ tab ของปฎิทินยาวออกไม่รวมอยู่วันเดียว
+  const endDate = new Date(end_date); // ใช้ใส่ google calendar เนื่องจากต้องทำให้อยู่ในรูป 2023-09-28T18:00:00.110Z ในวันสุดท้าย ซึ่งจะทำให้ tab ของปฎิทินยาวออกไม่รวมอยู่วันเดียว
 
   // เพิ่ม 7 ชั่วโมงในวันที่และเวลา
   startDate.setHours(startDate.getHours() + 7);
@@ -63,7 +63,7 @@ router.post("/bookLabRoom", async (req, res) => {
 
     if (data.length === 0) {
       await addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code);
-      const sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
+      const sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, end_date=?';
       const [results, _] = await db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate]);
       //console.log('Insert ID:', results.insertId); // รับ ID ของข้อมูลที่ถูกเพิ่ม
       res.json({ msg: 'ok' });
@@ -178,4 +178,3 @@ async function addEventToCalendar(name, startdate, enddate, newEndDate, room_cod
 
 
 module.exports = router;
-
