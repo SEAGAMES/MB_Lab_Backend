@@ -114,16 +114,6 @@ const { authenticate } = require('@google-cloud/local-auth');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
 
-function dateFormat(date) {
-  const dateTimeString = date; // วันที่และเวลาในรูปแบบ ISO 8601
-  const dateTime = new Date(dateTimeString); // แปลงเป็นวัตถุ Date
-  const day = dateTime.getDate().toString().padStart(2, '0'); // วัน
-  const month = (dateTime.getMonth() + 1).toString().padStart(2, '0'); // เดือน (เพิ่ม 1 เนื่องจากมกราคมเริ่มที่ 0)
-  const year = dateTime.getFullYear(); // ปี
-  const formattedDate = `${day}-${month}-${year + 543}`;
-  return formattedDate
-}
-
 function formatTime(dateTimeString) {
   const dateTime = new Date(dateTimeString);
   const hours = dateTime.getHours().toString().padStart(2, '0');
@@ -137,6 +127,8 @@ async function addEventToCalendar(name, startdate, enddate, newEndDate, room_cod
     keyfilePath: CREDENTIALS_PATH,
     scopes: 'https://www.googleapis.com/auth/calendar', // Use the correct scope
   });
+
+  console.log(auth)
 
   const calendar = google.calendar({ version: 'v3', auth });
   const end = new Date(enddate);
