@@ -7,6 +7,8 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var mb_lab = require('./routes/mb_lab')
+var certificate = require("./routes/certificate")
+
 
 const db = require('./routes/database')
 var cors = require('cors')
@@ -21,6 +23,7 @@ app.use(cors())
 // เนื่องจากติด cors จึงต้องติดตั้งเพื่ออนุญาติ ip นี้
 var corsOptions = {
   origin: "http://localhost:3200",
+  origin: "http://localhost:3300",
  
 }
 
@@ -31,7 +34,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ให้ไปที่ api ตัวไหน
-app.use('/',cors(corsOptions), mb_lab);
+app.use('/',cors(corsOptions), mb_lab, certificate);
 app.use('/users', usersRouter);
 
 

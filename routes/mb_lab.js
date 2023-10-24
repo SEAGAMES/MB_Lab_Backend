@@ -1,11 +1,11 @@
 const express = require("express");
 var router = express.Router();
-const db = require("./database");
+const { mb_lab } = require("./database");
 
 
 router.get("/mb_lab_room", function (req, res, next) {
   // res.render('index', { title: 'Express' });
-  db.execute(`SELECT * FROM mb_room`)
+  mb_lab.execute(`SELECT * FROM mb_room`)
     .then(([data, fields]) => {
       res.json({ data });
     })
@@ -16,7 +16,7 @@ router.get("/mb_lab_room", function (req, res, next) {
 
 router.get("/mb_booking_lab", function (req, res, next) {
   // res.render('index', { title: 'Express' });
-  db.execute(`SELECT * FROM book_lab
+  mb_lab.execute(`SELECT * FROM book_lab
   WHERE DATE(start_date) >= DATE(NOW() - INTERVAL 30 DAY)
   ORDER BY appove_status;
   `)
@@ -59,12 +59,12 @@ router.post("/bookLabRoom", async (req, res) => {
   const newEndDate = endDate.toISOString().slice(0, -5); // ใช้ลง DB 
 
   try {
-    const [data, fields] = await db.execute(`SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`);
+    const [data, fields] = await mb_lab.execute(`SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`);
 
     if (data.length === 0) {
       await addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code);
       const sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, end_date=?';
-      const [results, _] = await db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate]);
+      const [results, _] = await mb_lab.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate]);
       //console.log('Insert ID:', results.insertId); // รับ ID ของข้อมูลที่ถูกเพิ่ม
       res.json({ msg: 'ok' });
     } else {
@@ -89,7 +89,7 @@ router.post("/updateApproveStatus", async (req, res) => {
     `;
 
     // ทำการอัปเดตสถานะการอนุมัติในฐานข้อมูล
-    const [ results ] = await db.execute(sql, [statusCode, id]);
+    const [ results ] = await mb_lab.execute(sql, [statusCode, id]);
     //console.log(results)
 
     // ตรวจสอบผลลัพธ์และส่งคำตอบ JSON กลับไปยังฝั่ง frontend เพื่อรายงานสถานะของการอัปเดต (สำเร็จหรือไม่)
