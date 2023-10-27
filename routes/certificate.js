@@ -10,37 +10,20 @@ router.post("/create_certificate", async (req, res) => {
   const sql = 'INSERT INTO certificate_master SET pj_code=?, language=?, pj_name=?, currentYear=?, date_desc=?, add_name=?, add_position=?, sign=?, two_sign=?';
   await mb_certificate.execute(sql, [pj_code, language, pj_name, currentYear, date_desc, add_name, add_position, sign, two_sign]).then(([data, fields]) => {
     const details = req.body[1];
-
     // loop ขอว certificate Detail
     for (const [index, obj] of details.entries()) {
       const sql2 = 'INSERT INTO certificate_detail SET pj_code=?, no=?, prefix=?, name=?';
       mb_certificate.execute(sql2, [pj_code, index + 1, obj.prefix, obj.name]);
     }
-    console.log('PASS PASS PASS')
-    res.json({ data });
+    res.json({ msg: 'ok' });
   })
     .catch((error) => {
-      console.log('ERROR ERROR ERROR');
+      res.json({ msg: 'error' });
     });
-
-
-  // if (results.affectedRows === 1) {
-  //   const details = req.body[1];
-
-  //   // loop ขอว certificate Detail
-  //   for (const [index, obj] of details.entries()) {
-  //     const sql2 = 'INSERT INTO certificate_detail SET pj_code=?, no=?, prefix=?, name=?';
-  //     await mb_certificate.execute(sql2, [pj_code, index + 1, obj.prefix, obj.name]);
-  //   }
-  //   res.json({ msg: 'ok' });
-  // } else {
-  //   console.log(' ERROR ERROR ERROR ')
-  //   res.json({ msg: 'error' });
-  // }
 })
 
 router.get("/data_certificate", function (req, res, next) {
-  mb_certificate.execute(`SELECT * FROM certificate_master`)
+  mb_certificate.execute(`SELECT * FROM certificate_master ORDER BY id`)
     .then(([data, fields]) => {
       res.json({ data });
     })
@@ -48,5 +31,52 @@ router.get("/data_certificate", function (req, res, next) {
       console.log(error);
     });
 });
+
+router.get("/data_duplicate/:pj_code", function (req, res, next) {
+  const { pj_code } = req.params
+  console.log(pj_code)
+  mb_certificate.execute(`SELECT * FROM certificate_master WHERE pj_code = '${pj_code}'`)
+    .then(([data, fields]) => {
+      if (data.length > 0) {
+        res.json({ msg: 'error' });
+      } else {
+        res.json({ msg: 'ok' });
+      }
+    })
+    .catch((error) => {
+      res.json({ msg: ok });
+    });
+});
+
+router.delete("/delete_certificate/:pj_code", async (req, res, next) => {
+  const { pj_code } = req.params;
+  // ลบ certificate_master
+  await mb_certificate.execute("DELETE FROM certificate_master WHERE pj_code = ?", [pj_code]).then(async () => {
+    // ลบ certificate_detail
+    await mb_certificate.execute("DELETE FROM certificate_detail WHERE pj_code = ?", [pj_code]).then(() => {
+      res.json({ msg: 'ok' });
+    })
+  })
+    .catch((error) => {
+      res.json({ msg: 'error' });
+    });
+
+  // try {
+  //   // ใช้คำสั่ง SQL DELETE เพื่อลบแถวที่ตรงกับ pj_code
+  //   const [result] = await mb_certificate.execute("DELETE FROM certificate_master WHERE pj_code = ?", [pj_code]);
+
+  //   if (result.affectedRows > 0) {
+  //     // ถ้ามีแถวถูกลบ จะส่งข้อความ 'ok' กลับ
+  //     res.json({ msg: 'ok' });
+  //   } else {
+  //     // ถ้าไม่มีแถวถูกลบ (pj_code ไม่ตรง) จะส่งข้อความ 'error' กลับ
+  //     res.json({ msg: 'error' });
+  //   }
+  // } catch (error) {
+  //   // หากเกิดข้อผิดพลาดในการเรียกฐานข้อมูล
+  //   res.status(500).json({ msg: 'error' });
+  // }
+});
+
 
 module.exports = router;
