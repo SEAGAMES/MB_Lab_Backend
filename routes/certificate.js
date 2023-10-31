@@ -32,9 +32,20 @@ router.get("/data_certificate", function (req, res, next) {
     });
 });
 
-router.get("/data_duplicate/:pj_code", function (req, res, next) {
+router.get("/data_filter/:pj_code", function (req, res, next) {
   const { pj_code } = req.params
   console.log(pj_code)
+  mb_certificate.execute(`SELECT * FROM certificate_master WHERE pj_code LIKE '%${pj_code}%'`)
+    .then(([data, fields]) => {
+      res.json({ data });
+    })
+    .catch((error) => {
+      res.json({ msg: error });
+    });
+});
+
+router.get("/data_duplicate/:pj_code", function (req, res, next) {
+  const { pj_code } = req.params
   mb_certificate.execute(`SELECT * FROM certificate_master WHERE pj_code = '${pj_code}'`)
     .then(([data, fields]) => {
       if (data.length > 0) {
@@ -44,7 +55,7 @@ router.get("/data_duplicate/:pj_code", function (req, res, next) {
       }
     })
     .catch((error) => {
-      res.json({ msg: ok });
+      res.json({ msg: 'error' });
     });
 });
 
