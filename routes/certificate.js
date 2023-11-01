@@ -40,7 +40,18 @@ router.get("/data_filter/:pj_code", function (req, res, next) {
       res.json({ data });
     })
     .catch((error) => {
-      res.json({ msg: error });
+      res.json({ msg: 'error' });
+    });
+});
+
+router.get("/data_detail", function (req, res, next) {
+  mb_certificate.execute(`SELECT * FROM certificate_detail`)
+    .then(([data, fields]) => {
+      console.log(data)
+      res.json({ data });
+    })
+    .catch((error) => {
+      console.log(error);
     });
 });
 
