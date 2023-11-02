@@ -10,7 +10,7 @@ router.post("/create_certificate", async (req, res) => {
   const sql = 'INSERT INTO certificate_master SET pj_code=?, language=?, pj_name=?, currentYear=?, date_desc=?, add_name=?, add_position=?, sign=?, two_sign=?';
   await mb_certificate.execute(sql, [pj_code, language, pj_name, currentYear, date_desc, add_name, add_position, sign, two_sign]).then(([data, fields]) => {
     const details = req.body[1];
-    // loop ขอว certificate Detail
+    // loop ของ certificate Detail
     for (const [index, obj] of details.entries()) {
       const sql2 = 'INSERT INTO certificate_detail SET pj_code=?, no=?, prefix=?, name=?';
       mb_certificate.execute(sql2, [pj_code, index + 1, obj.prefix, obj.name]);
@@ -34,7 +34,6 @@ router.get("/data_certificate", function (req, res, next) {
 
 router.get("/data_filter/:pj_code", function (req, res, next) {
   const { pj_code } = req.params
-  console.log(pj_code)
   mb_certificate.execute(`SELECT * FROM certificate_master WHERE pj_code LIKE '%${pj_code}%'`)
     .then(([data, fields]) => {
       res.json({ data });
@@ -44,8 +43,11 @@ router.get("/data_filter/:pj_code", function (req, res, next) {
     });
 });
 
-router.get("/data_detail", function (req, res, next) {
-  mb_certificate.execute(`SELECT * FROM certificate_detail`)
+router.post("/data_detail", function (req, res, next) {
+  const { pj_code } = req.body
+  // console.log(req.body)
+  mb_certificate.execute(`SELECT * FROM certificate_detail WHERE pj_code = '${pj_code}'`)
+  //SELECT * FROM `certificate_detail` WHERE  pj_code = '%PAR-ASST-AA1%'
     .then(([data, fields]) => {
       console.log(data)
       res.json({ data });
