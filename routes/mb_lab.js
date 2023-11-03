@@ -1,11 +1,11 @@
 const express = require("express");
 var router = express.Router();
-const db = require("./database");
+const { mb_lab } = require("./database");
 
 
 router.get("/mb_lab_room", function (req, res, next) {
   // res.render('index', { title: 'Express' });
-  db.execute(`SELECT * FROM mb_room`)
+  mb_lab.execute(`SELECT * FROM mb_room`)
     .then(([data, fields]) => {
       res.json({ data });
     })
@@ -16,7 +16,7 @@ router.get("/mb_lab_room", function (req, res, next) {
 
 router.get("/mb_booking_lab", function (req, res, next) {
   // res.render('index', { title: 'Express' });
-  db.execute(`SELECT * FROM book_lab
+  mb_lab.execute(`SELECT * FROM book_lab
   WHERE DATE(start_date) >= DATE(NOW() - INTERVAL 30 DAY)
   ORDER BY appove_status;
   `)
@@ -38,17 +38,17 @@ router.post("/bookLabRoom", async (req, res) => {
     floor,
     where_lab,
     start_date,
-    endtime,
+    end_date,
     appove_status,
     appove_ac_name,
     room_code
   } = req.body;
 
-  //console.log(req.body)
+  console.log(req.body)
 
-  // แปลงข้อมูล start_date และ endtime เป็นวัตถุ Date
+  // แปลงข้อมูล start_date และ end_date เป็นวัตถุ Date
   const startDate = new Date(start_date);
-  const endDate = new Date(endtime); // ใช้ใส่ google calendar เนื่องจากต้องทำให้อยู่ในรูป 2023-09-28T18:00:00.110Z ในวันสุดท้าย ซึ่งจะทำให้ tab ของปฎิทินยาวออกไม่รวมอยู่วันเดียว
+  const endDate = new Date(end_date); // ใช้ใส่ google calendar เนื่องจากต้องทำให้อยู่ในรูป 2023-09-28T18:00:00.110Z ในวันสุดท้าย ซึ่งจะทำให้ tab ของปฎิทินยาวออกไม่รวมอยู่วันเดียว
 
   // เพิ่ม 7 ชั่วโมงในวันที่และเวลา
   startDate.setHours(startDate.getHours() + 7);
@@ -59,12 +59,12 @@ router.post("/bookLabRoom", async (req, res) => {
   const newEndDate = endDate.toISOString().slice(0, -5); // ใช้ลง DB 
 
   try {
-    const [data, fields] = await db.execute(`SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`);
+    const [data, fields] = await mb_lab.execute(`SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`);
 
     if (data.length === 0) {
       await addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code);
-      const sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, endtime=?';
-      const [results, _] = await db.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate]);
+      const sql = 'INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, start_date=?, end_date=?';
+      const [results, _] = await mb_lab.execute(sql, [ac_name, name, num_in_team, phone, where_lab, newStartDate, newEndDate]);
       //console.log('Insert ID:', results.insertId); // รับ ID ของข้อมูลที่ถูกเพิ่ม
       res.json({ msg: 'ok' });
     } else {
@@ -89,7 +89,7 @@ router.post("/updateApproveStatus", async (req, res) => {
     `;
 
     // ทำการอัปเดตสถานะการอนุมัติในฐานข้อมูล
-    const [ results ] = await db.execute(sql, [statusCode, id]);
+    const [ results ] = await mb_lab.execute(sql, [statusCode, id]);
     //console.log(results)
 
     // ตรวจสอบผลลัพธ์และส่งคำตอบ JSON กลับไปยังฝั่ง frontend เพื่อรายงานสถานะของการอัปเดต (สำเร็จหรือไม่)
@@ -114,16 +114,6 @@ const { authenticate } = require('@google-cloud/local-auth');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
 
-function dateFormat(date) {
-  const dateTimeString = date; // วันที่และเวลาในรูปแบบ ISO 8601
-  const dateTime = new Date(dateTimeString); // แปลงเป็นวัตถุ Date
-  const day = dateTime.getDate().toString().padStart(2, '0'); // วัน
-  const month = (dateTime.getMonth() + 1).toString().padStart(2, '0'); // เดือน (เพิ่ม 1 เนื่องจากมกราคมเริ่มที่ 0)
-  const year = dateTime.getFullYear(); // ปี
-  const formattedDate = `${day}-${month}-${year + 543}`;
-  return formattedDate
-}
-
 function formatTime(dateTimeString) {
   const dateTime = new Date(dateTimeString);
   const hours = dateTime.getHours().toString().padStart(2, '0');
@@ -137,6 +127,8 @@ async function addEventToCalendar(name, startdate, enddate, newEndDate, room_cod
     keyfilePath: CREDENTIALS_PATH,
     scopes: 'https://www.googleapis.com/auth/calendar', // Use the correct scope
   });
+
+  console.log(auth)
 
   const calendar = google.calendar({ version: 'v3', auth });
   const end = new Date(enddate);
@@ -178,4 +170,3 @@ async function addEventToCalendar(name, startdate, enddate, newEndDate, room_cod
 
 
 module.exports = router;
-
