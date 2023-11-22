@@ -4,6 +4,7 @@ const mysql = require("mysql2");
 // Common pool configuration
 const commonPoolConfig = {
   host: "localhost",
+  //host: "10.62.38.51",
   user: "root",
   password: ""
 };

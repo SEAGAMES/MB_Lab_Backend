@@ -22,9 +22,7 @@ app.use(cors())
 
 // เนื่องจากติด cors จึงต้องติดตั้งเพื่ออนุญาติ ip นี้
 var corsOptions = {
-  origin: "http://localhost:3200",
-  origin: "http://localhost:3300",
- 
+  origin: ["http://localhost:3200", "http://localhost:3300"]
 }
 
 app.use(logger('dev'));
@@ -34,18 +32,18 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ให้ไปที่ api ตัวไหน
-app.use('/',cors(corsOptions), mb_lab, certificate);
+app.use('/', cors(corsOptions), mb_lab, certificate);
 app.use('/users', usersRouter);
 
 
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -56,7 +54,7 @@ app.use(function(err, req, res, next) {
 });
 
 
-app.listen(9200,()=>{
+app.listen(9200, () => {
   console.log("backend run port number 9200")
 })
 
