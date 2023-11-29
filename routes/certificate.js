@@ -2,7 +2,7 @@ const express = require("express");
 var router = express.Router();
 const { mb_certificate } = require("./database");
 const createPDF = require('../service/apiCreatePDF')
-
+console.log('here '+ mb_certificate)
 router.post("/create_pdf", async (req, res) => {
   // //certification_pdf
   // const result = await createPDF.certification_pdf(req.body)
@@ -375,11 +375,19 @@ router.get("/data_formqrcode/:pj_code/:no", function (req, res, next) {
   JOIN certificate_detail cd ON cm.pj_code = cd.pj_code
   WHERE cm.pj_code = '${pj_code}' AND cd.no = ${no}`)
     .then(([data, fields]) => {
-      res.json({ data });
+      
+      //res.json({ data });
+      if (data.length > 0) {
+        console.log('สำเร็จ')
+        res.json({ data });
+      } else {
+        res.json({ msg: 'not found' });
+      }
     })
     .catch((error) => {
-      res.json({ error });
+      res.json({ msg: error });
     });
+
 })
 
 router.post("/update_certificate", async (req, res) => {
@@ -416,12 +424,17 @@ router.post("/update_certificate", async (req, res) => {
 router.get("/data_certificate", function (req, res, next) {
   mb_certificate.execute(`SELECT * FROM certificate_master ORDER BY created_datatime DESC`)
     .then(([data, fields]) => {
+      // console.log(data)
       res.json({ data });
     })
     .catch((error) => {
       res.json({ error });
     });
 })
+
+router.get("/test", function (req, res, next) {
+  res.json({ msg: 'ok'})
+}),
 
 router.post("/updateName", function (req, res, next) {
   const { pj_code, no, prefix, name } = req.body
