@@ -30,8 +30,14 @@ app.use(cors());
 
 var whitelist = [
   "https://mb.mahidol.ac.th",
-  "http://10.62.38.51:3300",
+  "https://mb.mahidol.ac.th/seapi",
+  "https://mb.mahidol.ac.th/mb_certificate",
+  "https://mb.mahidol.ac.th/mb_certificate/certificate-edit",
+  "https://mb.mahidol.ac.th/mb_certificate/show-pdf",
+  "http://10.62.40.186:3300",
   "http://10.20.5.205:9200",
+  "http://localhost:3200",
+  "http://localhost:3300",
 ];
 var corsOptions = {
   origin: function (origin, callback) {
