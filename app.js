@@ -8,6 +8,7 @@ var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 // var mb_lab = require('./routes/mb_lab')
 var certificate = require("./routes/certificate");
+var login = require("./routes/login");
 
 var cors = require("cors");
 var app = express();
@@ -31,13 +32,14 @@ app.use(cors());
 var whitelist = [
   "https://mb.mahidol.ac.th",
   "https://mb.mahidol.ac.th/seapi",
-  "https://mb.mahidol.ac.th/mb_certificate",
-  "https://mb.mahidol.ac.th/mb_certificate/certificate-edit",
-  "https://mb.mahidol.ac.th/mb_certificate/show-pdf",
+  // "https://mb.mahidol.ac.th/mb_certificate",
+  // "https://mb.mahidol.ac.th/mb_certificate/certificate-edit",
+  // "https://mb.mahidol.ac.th/mb_certificate/show-pdf",
   "http://10.62.40.186:3300",
   "http://10.20.5.205:9200",
   "http://localhost:3200",
   "http://localhost:3300",
+  "http://localhost:8080",
 ];
 var corsOptions = {
   origin: function (origin, callback) {
@@ -57,7 +59,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ให้ไปที่ api ตัวไหน
-app.use("/", cors(corsOptions), certificate);
+app.use("/", certificate);
+app.use("/login", login);
+
 app.use("/users", usersRouter);
 
 // catch 404 and forward to error handler

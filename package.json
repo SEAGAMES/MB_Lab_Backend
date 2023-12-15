@@ -15,9 +15,11 @@
     "gaxios": "^6.1.1",
     "googleapis": "^105.0.0",
     "http-errors": "~1.6.3",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "~1.9.1",
     "mysql2": "^3.6.0",
     "nodemon": "^3.0.1",
+    "ntp-time": "^2.0.3",
     "pdfmake": "^0.2.8",
     "pug": "2.0.0-beta11"
   }
