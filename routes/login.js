@@ -18,7 +18,7 @@ app.get("/test", function (req, res, next) {
       if (data.length > 0) {
         res.json({ data });
       } else {
-        res.json({ msg: "not found" });
+        res.json({ msg: "not found" }); 
       }
     })
     .catch((error) => {
@@ -67,7 +67,7 @@ const loginMiddleWare = (req, res, next) => {
           console.log("โย่");
           sql = `SELECT token FROM student WHERE accountname = ?`;
         }
-        email[1] = "sujit.vat"; //อย่าลืมด้วย
+        email[1] = "thanakrit.nim"; //อย่าลืมด้วย
         // sql = `SELECT token FROM student WHERE accountname = ?`
         // usermb.execute(sql, [email[0]], (err, result) => {
         //   if (err) {
