@@ -42,8 +42,8 @@ router.get("/thisLabBooking/:labNo", function (req, res, next) {
     mb_lab
       .execute(
         `SELECT * FROM book_lab
-        WHERE DATE(start_date) >= DATE(NOW() - INTERVAL 30 DAY)
-        ORDER BY appove_status;
+        WHERE start_date >= CURDATE()
+        ORDER BY appove_status ASC, start_date ASC;
         `
       )
       .then(([data, fields]) => {
