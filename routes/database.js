@@ -4,12 +4,16 @@ const mysql = require("mysql2");
 // Common pool configuration
 const commonPoolConfig = {
   host: "localhost",
+
   user: "root",
-  password: ""
+  //password: "Password@1", // for server
+  waitForConnections: true,
+  connectionLimit: 2,
+  queueLimit: 0
 };
 
 // ใส่ชื่อ DB ใหม่ตรงนี้
-const databaseNames = ["mb_lab", "mb_certificate"];
+const databaseNames = ["usermb", "mb_lab", "mb_certificate"];
 const databasePools = {};
 
 for (const dbName of databaseNames) {
@@ -26,3 +30,16 @@ module.exports = Object.fromEntries(
     databasePools[dbName].promise()
   ])
 );
+
+// const mb_certificate_DB = mysql.createPool({
+//   host: "localhost",
+//   user: "root",
+//   password: 'Password@1',
+//   database: "mb_certificate",
+//   waitForConnections: true,
+//   connectionLimit: 2,
+//   queueLimit: 0
+
+// })
+
+// module.exports = { mb_certificate:mb_certificate_DB }
