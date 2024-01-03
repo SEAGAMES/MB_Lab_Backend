@@ -19,7 +19,10 @@ router.get("/thisLabBooking/:labNo", function (req, res, next) {
   mb_lab
     .execute(
       `
-      SELECT * FROM book_lab WHERE where_lab ='${labNo}'`
+      SELECT * FROM book_lab
+      WHERE where_lab ='${labNo}' AND start_date >= CURDATE()
+      ORDER BY start_date ASC;
+      `
     )
     .then(([data, fields]) => {
       //res.json({ data });
@@ -39,9 +42,9 @@ router.get("/thisLabBooking/:labNo", function (req, res, next) {
     mb_lab
       .execute(
         `SELECT * FROM book_lab
-  WHERE DATE(start_date) >= DATE(NOW() - INTERVAL 30 DAY)
-  ORDER BY appove_status;
-  `
+        WHERE DATE(start_date) >= DATE(NOW() - INTERVAL 30 DAY)
+        ORDER BY appove_status;
+        `
       )
       .then(([data, fields]) => {
         res.json({ data });
@@ -70,7 +73,7 @@ router.post("/bookLabRoom", async (req, res) => {
 
   // แปลงข้อมูล start_date และ end_date เป็นวัตถุ Date
   const startDate = new Date(start_date);
-  const endDate = new Date(endtime); 
+  const endDate = new Date(endtime);
 
   // เพิ่ม 7 ชั่วโมงในวันที่และเวลา
   const startDate_Between = new Date(start_date);
@@ -82,7 +85,7 @@ router.post("/bookLabRoom", async (req, res) => {
 
   try {
     const [data, fields] = await mb_lab.execute(
-      `SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND start_date BETWEEN '${newStartDate}' AND '${newEndDate}'`
+      `SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND ('${newStartDate}' BETWEEN start_date AND end_date OR '${newEndDate}' BETWEEN start_date AND end_date)`
     );
 
     if (data.length === 0) {
@@ -101,7 +104,7 @@ router.post("/bookLabRoom", async (req, res) => {
       //console.log('Insert ID:', results.insertId); // รับ ID ของข้อมูลที่ถูกเพิ่ม
       res.json({ msg: "ok" });
     } else {
-      console.log('Time conflict')
+      console.log("Time conflict");
       res.json({ msg: "Time conflict" });
     }
   } catch (error) {
