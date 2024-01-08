@@ -6,6 +6,7 @@ var logger = require("morgan");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
+var mb_policy = require('./routes/mb_policy')
 var mb_lab = require('./routes/mb_lab')
 var certificate = require("./routes/certificate");
 var login = require("./routes/login");
@@ -47,6 +48,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ให้ไปที่ api ตัวไหน
+app.use("/mb_policy", mb_policy);
 app.use("/", certificate);
 app.use("/login", login);
 app.use("/mb_lab", mb_lab);

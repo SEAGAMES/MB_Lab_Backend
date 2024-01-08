@@ -60,13 +60,9 @@ router.post("/bookLabRoom", async (req, res) => {
     name,
     num_in_team,
     phone,
-    zone,
-    floor,
     where_lab,
     start_date,
     endtime,
-    appove_status,
-    appove_ac_name,
   } = req.body;
 
   console.log(req.body);
@@ -95,7 +91,7 @@ router.post("/bookLabRoom", async (req, res) => {
       const [results, _] = await mb_lab.execute(sql, [
         ac_name,
         name,
-        num_in_team,
+        '5',
         phone,
         where_lab,
         startDate,
