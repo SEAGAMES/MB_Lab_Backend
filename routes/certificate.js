@@ -7,6 +7,7 @@ router.post("/create_certificate", async (req, res) => {
   const {
     pj_code,
     pj_name,
+    participation_status,
     language,
     currentYear,
     date_desc,
@@ -16,15 +17,16 @@ router.post("/create_certificate", async (req, res) => {
     two_sign,
   } = req.body[0];
 
-  // console.log(req.body[0])
+  //console.log(req.body[0])
 
   const sql =
-    "INSERT INTO certificate_master SET pj_code=?, language=?, pj_name=?, currentYear=?, date_desc=?, add_name=?, add_position=?, sign=?, two_sign=?";
+    "INSERT INTO certificate_master SET pj_code=?, language=?, pj_name=?, participation_status=?, currentYear=?, date_desc=?, add_name=?, add_position=?, sign=?, two_sign=?, created_datatime=NOW()";
   await mb_certificate
     .execute(sql, [
       pj_code,
       language,
       pj_name,
+      participation_status,
       currentYear,
       date_desc,
       add_name,
@@ -109,6 +111,7 @@ router.post("/update_certificate", async (req, res) => {
     currentYear,
     date_desc,
     add_name,
+    participation_status,
     add_position,
     sign,
     two_sign,
@@ -117,7 +120,7 @@ router.post("/update_certificate", async (req, res) => {
   //UPDATE certificate_detail SET prefix = '${prefix}', name = '${name}' WHERE pj_code = '${pj_code}' AND no = ${no}
   await mb_certificate
     .execute(
-      `UPDATE certificate_master SET pj_code='${pj_code}', language='${language}', pj_name='${pj_name}' , currentYear='${currentYear}', date_desc='${date_desc}', add_name='${add_name}', add_position='${add_position}', sign=${sign}, two_sign=${two_sign} WHERE id = ${id}`
+      `UPDATE certificate_master SET pj_code='${pj_code}', language='${language}', pj_name='${pj_name}', participation_status='${participation_status}' , currentYear='${currentYear}', date_desc='${date_desc}', add_name='${add_name}', add_position='${add_position}', sign=${sign}, two_sign=${two_sign} WHERE id = ${id}`
     )
     .then(async ([data, fields]) => {
       // console.log('pass')
