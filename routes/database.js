@@ -13,7 +13,7 @@ const commonPoolConfig = {
 };
 
 // ใส่ชื่อ DB ใหม่ตรงนี้
-const databaseNames = ["usermb", "mb_lab", "mb_certificate"];
+const databaseNames = ["usermb", "mb_policy", "mb_lab", "mb_certificate"];
 const databasePools = {};
 
 for (const dbName of databaseNames) {
