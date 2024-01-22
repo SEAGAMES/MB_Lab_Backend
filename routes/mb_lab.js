@@ -55,15 +55,8 @@ router.get("/thisLabBooking/:labNo", function (req, res, next) {
   });
 
 router.post("/bookLabRoom", async (req, res) => {
-  const {
-    ac_name,
-    name,
-    num_in_team,
-    phone,
-    where_lab,
-    start_date,
-    endtime,
-  } = req.body;
+  const { ac_name, name, num_in_team, phone, where_lab, start_date, endtime } =
+    req.body;
 
   console.log(req.body);
 
@@ -91,7 +84,7 @@ router.post("/bookLabRoom", async (req, res) => {
       const [results, _] = await mb_lab.execute(sql, [
         ac_name,
         name,
-        '5',
+        "5",
         phone,
         where_lab,
         startDate,
@@ -135,6 +128,20 @@ router.post("/updateApproveStatus", async (req, res) => {
     console.error(error);
     res.status(500).json({ msg: "Internal Server Error" });
   }
+});
+
+//SELECT * FROM `book_lab` WHERE id = '330'
+router.delete("/delete_bookingLab/:id", async (req, res, next) => {
+  const { id } = req.params;
+  console.log(id)
+  mb_lab
+    .execute(`DELETE FROM book_lab WHERE id = ${id}`)
+    .then(async () => {
+      res.json({ msg: "ok" });
+    })
+    .catch((error) => {
+      res.json({ msg: "error" });
+    });
 });
 
 function formatISODate(isoString) {
