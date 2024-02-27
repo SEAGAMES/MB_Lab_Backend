@@ -55,16 +55,8 @@ router.get("/thisLabBooking/:labNo", function (req, res, next) {
   });
 
 router.post("/bookLabRoom", async (req, res) => {
-  console.log("bookLabRoom");
-  const {
-    ac_name,
-    name,
-    num_in_team,
-    phone,
-    where_lab,
-    start_date,
-    endtime,
-  } = req.body;
+  const { ac_name, name, aca_id, reason, where_lab, start_date, endtime } =
+    req.body;
 
   console.log(req.body);
 
@@ -81,30 +73,45 @@ router.post("/bookLabRoom", async (req, res) => {
   const newEndDate = formatISODate(endDate_Between);
 
   try {
-    const [data, fields] = await mb_lab.execute(
-      `SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND ('${newStartDate}' BETWEEN start_date AND end_date OR '${newEndDate}' BETWEEN start_date AND end_date)`
-    );
+    // เช็กเวลาว่าซ้ำมั้ย
+    // const [data, fields] = await mb_lab.execute(
+    //   `SELECT * FROM book_lab WHERE where_lab = '${where_lab}' AND ('${newStartDate}' BETWEEN start_date AND end_date OR '${newEndDate}' BETWEEN start_date AND end_date)`
+    // );
 
-    if (data.length === 0) {
-      //await addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code);
-      const sql =
-        "INSERT INTO book_lab SET ac_name=?, name=?, num_in_team=?, phone=?, where_lab=?, appove_status=?, start_date=?, end_date=?";
-      const [results, _] = await mb_lab.execute(sql, [
-        ac_name,
-        name,
-        "5",
-        phone,
-        where_lab,
-        "0",
-        startDate,
-        endDate,
-      ]);
-      //console.log('Insert ID:', results.insertId); // รับ ID ของข้อมูลที่ถูกเพิ่ม
-      res.json({ msg: "ok" });
-    } else {
-      console.log("Time conflict");
-      res.json({ msg: "Time conflict" });
-    }
+    // if (data.length === 0) {
+    //   //await addEventToCalendar(name, newStartDate, endDate, newEndDate, room_code);
+    //   const sql =
+    //     "INSERT INTO book_lab SET ac_name=?, name=?, aca_id=?, reason=?, where_lab=?, appove_status=?, start_date=?, end_date=?";
+    //   const [results, _] = await mb_lab.execute(sql, [
+    //     ac_name,
+    //     name,
+    //     aca_id	,
+    //     reason,
+    //     where_lab,
+    //     "0",
+    //     startDate,
+    //     endDate,
+    //   ]);
+    //   //console.log('Insert ID:', results.insertId); // รับ ID ของข้อมูลที่ถูกเพิ่ม
+    //   res.json({ msg: "ok" });
+    // } else {
+    //   console.log("Time conflict");
+    //   res.json({ msg: "Time conflict" });
+    // }
+
+    const sql =
+      "INSERT INTO book_lab SET ac_name=?, name=?, aca_id=?, reason=?, where_lab=?, appove_status=?, start_date=?, end_date=?";
+    const [results, _] = await mb_lab.execute(sql, [
+      ac_name,
+      name,
+      aca_id,
+      reason,
+      where_lab,
+      "0",
+      startDate,
+      endDate,
+    ]);
+    res.json({ msg: "ok" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "Internal Server Error" });
@@ -114,17 +121,18 @@ router.post("/bookLabRoom", async (req, res) => {
 router.post("/updateApproveStatus", async (req, res) => {
   const id = req.body.id; // รับค่า dataID จาก req.body
   const statusCode = req.body.statusCode; // รับค่า value จาก req.body
+  const approver = req.body.approver
 
   try {
     // สร้างคำสั่ง SQL UPDATE สถานะการอนุมัติ
     const sql = `
       UPDATE book_lab
-      SET appove_status = ?
+      SET appove_status = ?, appove_ac_name = ?
       WHERE id = ?
     `;
 
     // ทำการอัปเดตสถานะการอนุมัติในฐานข้อมูล
-    const [results] = await mb_lab.execute(sql, [statusCode, id]);
+    const [results] = await mb_lab.execute(sql, [statusCode, approver, id]);
     //console.log(results)
 
     // ตรวจสอบผลลัพธ์และส่งคำตอบ JSON กลับไปยังฝั่ง frontend เพื่อรายงานสถานะของการอัปเดต (สำเร็จหรือไม่)

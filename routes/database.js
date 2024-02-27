@@ -6,14 +6,14 @@ const commonPoolConfig = {
   host: "localhost",
 
   user: "root",
-  password: "Password@1", // for server
+  // password: "Password@1", // for server
   waitForConnections: true,
   connectionLimit: 2,
   queueLimit: 0
 };
 
 // ใส่ชื่อ DB ใหม่ตรงนี้
-const databaseNames = ["usermb", "mb_policy", "mb_lab", "mb_certificate"];
+const databaseNames = ["usermb", "mb_policy", "mb_lab", "mb_certificate", 'mb_academic'];
 const databasePools = {};
 
 for (const dbName of databaseNames) {

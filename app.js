@@ -9,6 +9,7 @@ var usersRouter = require("./routes/users");
 var mb_policy = require('./routes/mb_policy')
 var mb_lab = require('./routes/mb_lab')
 var certificate = require("./routes/certificate");
+var mb_academic = require("./routes/mb_academic");
 
 var cors = require("cors");
 var app = express();
@@ -64,6 +65,7 @@ app.use("/", certificate);
 app.use("/mb_policy", mb_policy);
 app.use("/mb_lab", mb_lab);
 app.use("/users", usersRouter);
+app.use("/mb_academic", mb_academic);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
