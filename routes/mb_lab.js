@@ -1,6 +1,50 @@
 const express = require("express");
 var router = express.Router();
 const { mb_lab } = require("./database");
+const { sendEmail } = require('../email/email')
+
+// เเปลงรูปแบบเวลาสำหรับเเสดงใน email
+const formatdate = async (date) => {
+  const isoDate = date;
+  const dateObject = new Date(isoDate);
+
+  // สร้างรายการของชื่อวันในภาษาไทย
+  const thaiDays = [
+    "(อา.)",
+    "(จ.)",
+    "(อ.)",
+    "(พ.)",
+    "(พฤ.)",
+    "(ศ.)",
+    "(ส.)",
+  ];
+
+  // ดึงชื่อวันโดยใช้ getDay() เพื่อหาว่าวันที่ในสัปดาห์เป็นวันอะไร
+  const dayName = thaiDays[dateObject.getDay()];
+
+  // สร้างรูปแบบในการแสดงผล
+  const timeString = dateObject.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour24: true, // เปลี่ยนเป็นรูปแบบ 12 ชั่วโมง AM/PM
+  });
+
+  const formattedDate = `${dayName} ${dateObject.getDate()}/${
+    dateObject.getMonth() + 1
+  }/${dateObject.getFullYear()} (${timeString})`;
+  return formattedDate;
+}
+
+// ส่ง mail เเจ้งเตือนเเละเตรียมอนุมัติ
+const mbroom_form_tomail = async (data, startDate_ShowMail, endDate_ShowMail) => {
+  let to = "thanakrit.nim@mahidol.ac.th"
+  // let to ="sujit.vat@mahidol.ac.th"
+  let cc = ""
+  let bcc = ""
+  let subject = "ขอใช้ห้องปฏิบัติการในสถาบันฯ"
+  let mail_body = '<div style="font-size: 18px;"> <p>เรียน รศ. ดร. อภินันท์ อุดมกิจ</p> <p>เนื่องด้วย ' + data.name + ' มีความประสงค์การให้ &nbsp;</p> <p>' + data.student_name + ' หลักสูตร ' + data.aca_value + ' </p> <p>ใช้ห้อง ' + data.where_lab + ' ตั้งเเต่ ' + startDate_ShowMail + ' - ' + endDate_ShowMail + '</p> <p>เหตุผลในการขอใช้ห้อง ' + data.reason + ' </p> <p>โปรดอนุญาติ&nbsp;<a data-fr-linked="true" href="http://10.62.116.67:3200/mb_lab/#/mb-approve">http://10.62.116.67:3200/mb_lab/#/mb-approve</a><br><br><br></p> </div>'
+  sendEmail(mail_body, to, cc, bcc, subject)
+}
 
 router.get("/mb_lab_room", function (req, res, next) {
   // res.render('index', { title: 'Express' });
@@ -55,10 +99,10 @@ router.get("/thisLabBooking/:labNo", function (req, res, next) {
   });
 
 router.post("/bookLabRoom", async (req, res) => {
-  const { ac_name, name, aca_id, reason, where_lab, start_date, endtime } =
+  const { ac_name, name, student_name, aca_id, reason, where_lab, start_date, endtime } =
     req.body;
 
-  console.log(req.body);
+  //console.log(req.body);
 
   // แปลงข้อมูล start_date และ end_date เป็นวัตถุ Date
   const startDate = new Date(start_date);
@@ -100,10 +144,11 @@ router.post("/bookLabRoom", async (req, res) => {
     // }
 
     const sql =
-      "INSERT INTO book_lab SET ac_name=?, name=?, aca_id=?, reason=?, where_lab=?, appove_status=?, start_date=?, end_date=?";
+      "INSERT INTO book_lab SET ac_name=?, name=?, student_name=?, aca_id=?, reason=?, where_lab=?, appove_status=?, start_date=?, end_date=?";
     const [results, _] = await mb_lab.execute(sql, [
       ac_name,
       name,
+      student_name,
       aca_id,
       reason,
       where_lab,
@@ -111,6 +156,10 @@ router.post("/bookLabRoom", async (req, res) => {
       startDate,
       endDate,
     ]);
+    const startDate_ShowMail = await formatdate(startDate);
+    const endDate_ShowMail = await formatdate(endDate);
+
+    mbroom_form_tomail(req.body, startDate_ShowMail, endDate_ShowMail)
     res.json({ msg: "ok" });
   } catch (error) {
     console.error(error);
@@ -177,7 +226,7 @@ function formatISODate(isoString) {
 
 const isoString = "2023-12-26T14:43:00.717Z";
 const formattedDate = formatISODate(isoString);
-console.log(formattedDate); // Output: '2023-12-26 14:43:00'
+//console.log(formattedDate); // Output: '2023-12-26 14:43:00'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
