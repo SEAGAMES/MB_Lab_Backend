@@ -6,7 +6,7 @@ const commonPoolConfig = {
   host: "localhost",
 
   user: "root",
-  //password: "Password@1", // for server
+  password: "Password@1", // for server
   waitForConnections: true,
   connectionLimit: 2,
   queueLimit: 0
